@@ -22,7 +22,7 @@ export class ProjectsController {
   constructor(private readonly projectsService: ProjectsService) {}
 
   @Get(':uuid')
-  findOne(@Param('uuid') uuid: number) {
+  findOne(@Param('uuid') uuid: string) {
     return this.projectsService.findOne(uuid);
   }
   @Get()

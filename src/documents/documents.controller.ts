@@ -20,7 +20,7 @@ export class DocumentsController {
   constructor(private readonly documentsService: DocumentsService) {}
 
   @Get(':uuid')
-  findOne(@Param('uuid') uuid: number) {
+  findOne(@Param('uuid') uuid: string) {
     return this.documentsService.findOne(uuid);
   }
   @Get()

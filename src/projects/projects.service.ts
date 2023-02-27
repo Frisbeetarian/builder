@@ -5,8 +5,6 @@ import { DataSource, Repository } from 'typeorm';
 import { CreateProjectDto } from './dto/create-project.dto';
 import { Document } from '../documents/entities/document.entity';
 import { PaginationQueryDto } from '../common/dto/pagination-query.dto';
-import { Coffee } from '../coffees/entities/project.entity';
-import { UpdateCoffeeDto } from '../coffees/dto/update-coffee.dto';
 import { UpdateProjectDto } from './dto/update-project.dto';
 
 @Injectable()
