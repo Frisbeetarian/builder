@@ -11,6 +11,7 @@ import {
   Query,
 } from '@nestjs/common';
 import { ApiTags } from '@nestjs/swagger';
+
 import { ProjectsService } from './projects.service';
 import { CreateProjectDto } from './dto/create-project.dto';
 import { PaginationQueryDto } from '../common/dto/pagination-query.dto';
@@ -33,8 +34,6 @@ export class ProjectsController {
   @Post()
   @HttpCode(HttpStatus.GONE)
   create(@Body() createProjectDto: CreateProjectDto) {
-    console.log('create project dto:', createProjectDto);
-
     return this.projectsService.create(createProjectDto);
   }
 

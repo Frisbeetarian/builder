@@ -1,7 +1,8 @@
 import { Injectable, NotFoundException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { Project } from '../projects/entities/project.entity';
 import { DataSource, Repository } from 'typeorm';
+
+import { Project } from '../projects/entities/project.entity';
 import { Document } from './entities/document.entity';
 import { PaginationQueryDto } from '../common/dto/pagination-query.dto';
 import { CreateDocumentDto } from './dto/create-document-dto';
@@ -42,10 +43,8 @@ export class DocumentsService {
   }
 
   async create(createDocumentDto: CreateDocumentDto) {
-    console.log('create document dto:', createDocumentDto);
     const project = this.documentsRepository.create({
       ...createDocumentDto,
-      projects: [],
     });
 
     return this.documentsRepository.save(project);

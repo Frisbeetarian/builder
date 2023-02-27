@@ -11,7 +11,7 @@ import { Project } from '../../projects/entities/project.entity';
 
 @Entity()
 export class Document {
-  @PrimaryGeneratedColumn()
+  @PrimaryGeneratedColumn('uuid')
   uuid: string;
 
   @Column()
@@ -24,11 +24,11 @@ export class Document {
   elements?: Element[];
 
   @ManyToMany((project) => Project, (project) => project.documents)
-  projects?: Project[];
+  projects: Project[];
 
-  @Column()
+  @Column({ type: 'timestamp', default: 'now()' })
   updatedAt: Date;
 
-  @Column()
+  @Column({ type: 'timestamp', default: 'now()' })
   createdAt: Date;
 }

@@ -10,7 +10,7 @@ import { Document } from '../../documents/entities/document.entity';
 
 @Entity()
 export class Element {
-  @PrimaryGeneratedColumn()
+  @PrimaryGeneratedColumn('uuid')
   uuid: string;
 
   @Column()
@@ -22,9 +22,9 @@ export class Element {
   @ManyToMany((document) => Document, (document) => document.elements)
   documents?: Document[];
 
-  @Column()
+  @Column({ type: 'timestamp', default: 'now()' })
   updatedAt: Date;
 
-  @Column()
+  @Column({ type: 'timestamp', default: 'now()' })
   createdAt: Date;
 }

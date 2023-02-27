@@ -10,11 +10,14 @@ import {
   Post,
   Query,
 } from '@nestjs/common';
+import { ApiTags } from '@nestjs/swagger';
+
 import { PaginationQueryDto } from '../common/dto/pagination-query.dto';
 import { DocumentsService } from './documents.service';
 import { CreateDocumentDto } from './dto/create-document-dto';
 import { UpdateDocumentDto } from './dto/update-document-dto';
 
+@ApiTags('documents')
 @Controller('documents')
 export class DocumentsController {
   constructor(private readonly documentsService: DocumentsService) {}
@@ -30,10 +33,10 @@ export class DocumentsController {
 
   @Post()
   @HttpCode(HttpStatus.GONE)
-  create(@Body() createProjectDto: CreateDocumentDto) {
-    console.log('create project dto:', createProjectDto);
-
-    return this.documentsService.create(createProjectDto);
+  create(
+    @Body() createDocumentDto: CreateDocumentDto,
+  ): Promise<CreateDocumentDto> {
+    return this.documentsService.create(createDocumentDto);
   }
 
   @Patch(':uuid')
