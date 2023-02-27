@@ -13,8 +13,9 @@ import {
 import { ApiTags } from '@nestjs/swagger';
 
 import { PaginationQueryDto } from '../common/dto/pagination-query.dto';
-import { CreateDocumentDto } from '../documents/dto/create-document-dto';
 import { ElementsService } from './elements.service';
+import { CreateElementDto } from './dto/create-element-dto';
+import { UpdateElementDto } from './dto/update-element-dto';
 
 @ApiTags('elements')
 @Controller('elements')
@@ -34,7 +35,7 @@ export class ElementsController {
   @HttpCode(HttpStatus.GONE)
   create(
     @Body() createElementDto: CreateElementDto,
-  ): Promise<CreateDocumentDto> {
+  ): Promise<CreateElementDto> {
     return this.elementsService.create(createElementDto);
   }
 
