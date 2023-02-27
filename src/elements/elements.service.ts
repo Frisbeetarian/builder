@@ -42,12 +42,17 @@ export class ElementsService {
     });
   }
 
-  async create(createElementDto: CreateElementDto) {
-    const element = this.elementsRepository.create({
-      ...createElementDto,
-    });
+  async create(createElementDto: CreateElementDto): Promise<Element> {
+    try {
+      const element = this.elementsRepository.create({
+        ...createElementDto,
+      });
 
-    return this.elementsRepository.save(element);
+      return this.elementsRepository.save(element as Element);
+    } catch (e) {
+      console.log(e);
+      throw new Error(e.message);
+    }
   }
 
   async update(uuid: string, updateElementDto: UpdateElementDto) {

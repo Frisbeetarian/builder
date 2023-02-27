@@ -23,7 +23,7 @@ export class DocumentsService {
   async findOne(uuid: string) {
     const document = await this.documentsRepository.findOne({
       where: { uuid: uuid },
-      relations: ['projects'],
+      relations: ['projects', 'elements'],
     });
 
     if (!document) {

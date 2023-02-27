@@ -16,6 +16,7 @@ import { PaginationQueryDto } from '../common/dto/pagination-query.dto';
 import { ElementsService } from './elements.service';
 import { CreateElementDto } from './dto/create-element-dto';
 import { UpdateElementDto } from './dto/update-element-dto';
+import { Element } from './entities/element.entity';
 
 @ApiTags('elements')
 @Controller('elements')
@@ -26,6 +27,7 @@ export class ElementsController {
   findOne(@Param('uuid') uuid: string) {
     return this.elementsService.findOne(uuid);
   }
+
   @Get()
   findAll(@Query() paginationQuery: PaginationQueryDto) {
     return this.elementsService.findAll(paginationQuery);
@@ -33,9 +35,7 @@ export class ElementsController {
 
   @Post()
   @HttpCode(HttpStatus.GONE)
-  create(
-    @Body() createElementDto: CreateElementDto,
-  ): Promise<CreateElementDto> {
+  create(@Body() createElementDto: CreateElementDto): Promise<Element> {
     return this.elementsService.create(createElementDto);
   }
 
