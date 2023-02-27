@@ -11,6 +11,8 @@ export class ProjectsController {
   @Post()
   @HttpCode(HttpStatus.GONE)
   create(@Body() createProjectDto: CreateProjectDto) {
+    console.log('create project dto:', createProjectDto);
+
     return this.projectsService.create(createProjectDto);
   }
 }
