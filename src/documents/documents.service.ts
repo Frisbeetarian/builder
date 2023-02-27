@@ -7,6 +7,7 @@ import { Document } from './entities/document.entity';
 import { PaginationQueryDto } from '../common/dto/pagination-query.dto';
 import { CreateDocumentDto } from './dto/create-document-dto';
 import { UpdateDocumentDto } from './dto/update-document-dto';
+import { Element } from '../elements/entities/element.entity';
 
 @Injectable()
 export class DocumentsService {
@@ -16,6 +17,9 @@ export class DocumentsService {
 
     @InjectRepository(Document)
     private readonly documentsRepository: Repository<Document>,
+
+    @InjectRepository(Element)
+    private readonly elementsRepository: Repository<Element>,
 
     private readonly dataSource: DataSource,
   ) {}
@@ -30,7 +34,19 @@ export class DocumentsService {
       throw new NotFoundException(`Document #${uuid} not found`);
     }
 
-    return document;
+    const elements = await Promise.all(
+      document.elementToDocuments.map(async (elementInDocument) => {
+        const element = await this.elementsRepository.findOne({
+          where: { uuid: elementInDocument.elementUuid },
+        });
+
+        return { ...element, order: elementInDocument.order };
+      }),
+    );
+
+    delete document.elementToDocuments;
+
+    return { ...document, elements };
   }
 
   findAll(paginationQuery: PaginationQueryDto): Promise<Document[]> {
