@@ -14,7 +14,7 @@ import { ApiTags } from '@nestjs/swagger';
 import { ProjectsService } from './projects.service';
 import { CreateProjectDto } from './dto/create-project.dto';
 import { PaginationQueryDto } from '../common/dto/pagination-query.dto';
-import { UpdateCoffeeDto } from '../coffees/dto/update-coffee.dto';
+import { UpdateProjectDto } from './dto/update-project.dto';
 
 @ApiTags('projects')
 @Controller('projects')
@@ -41,9 +41,9 @@ export class ProjectsController {
   @Patch(':uuid')
   update(
     @Param('uuid') uuid: string,
-    @Body() updateCoffeeDto: UpdateCoffeeDto,
+    @Body() updateProjectDto: UpdateProjectDto,
   ) {
-    return this.projectsService.update(uuid, updateCoffeeDto);
+    return this.projectsService.update(uuid, updateProjectDto);
   }
 
   @Delete(':uuid')
