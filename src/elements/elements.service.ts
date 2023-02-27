@@ -1,4 +1,4 @@
-import { Injectable, NotFoundException } from '@nestjs/common';
+import { Inject, Injectable, NotFoundException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { DataSource, Repository } from 'typeorm';
 
@@ -7,6 +7,7 @@ import { PaginationQueryDto } from '../common/dto/pagination-query.dto';
 import { Element } from './entities/element.entity';
 import { CreateElementDto } from './dto/create-element-dto';
 import { UpdateElementDto } from './dto/update-element-dto';
+import { ElementToDocument } from '../documents/elementToDocument.entity';
 
 @Injectable()
 export class ElementsService {
@@ -17,13 +18,16 @@ export class ElementsService {
     @InjectRepository(Document)
     private readonly documentsRepository: Repository<Document>,
 
+    @InjectRepository(ElementToDocument)
+    private readonly elementToDocumentsRepository: Repository<ElementToDocument>,
+
     private readonly dataSource: DataSource,
   ) {}
 
   async findOne(uuid: string) {
     const element = await this.elementsRepository.findOne({
       where: { uuid: uuid },
-      relations: ['documents'],
+      relations: ['elementToDocuments'],
     });
 
     if (!element) {
@@ -44,11 +48,38 @@ export class ElementsService {
 
   async create(createElementDto: CreateElementDto): Promise<Element> {
     try {
-      const element = this.elementsRepository.create({
+      console.log('create element dto:', createElementDto);
+
+      const element = await this.elementsRepository.create({
         ...createElementDto,
       });
+      const savedElement = await this.elementsRepository.save(
+        element as Element,
+      );
 
-      return this.elementsRepository.save(element as Element);
+      console.log('savedElement:', savedElement);
+
+      const elementToDocuments = createElementDto.documents.map((document) => {
+        return {
+          order: createElementDto.order,
+          elementUuid: savedElement.uuid,
+          documentUuid: document.uuid,
+        };
+      });
+
+      console.log('elementToDocuments:', elementToDocuments);
+
+      const dd = await this.elementToDocumentsRepository.create({
+        ...elementToDocuments[0],
+      });
+
+      await this.elementToDocumentsRepository.save(dd);
+
+      // const element = await this.elementsRepository.preload({
+      //
+      // })
+
+      return savedElement;
     } catch (e) {
       console.log(e);
       throw new Error(e.message);
@@ -67,7 +98,7 @@ export class ElementsService {
     const element = await this.elementsRepository.preload({
       uuid,
       ...updateElementDto,
-      documents,
+      // elementToDocuments: documents,
     });
 
     if (!element) {

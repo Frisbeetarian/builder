@@ -3,10 +3,12 @@ import {
   Entity,
   JoinTable,
   ManyToMany,
+  OneToMany,
   PrimaryGeneratedColumn,
 } from 'typeorm';
 
 import { Document } from '../../documents/entities/document.entity';
+import { ElementToDocument } from '../../documents/elementToDocument.entity';
 
 @Entity()
 export class Element {
@@ -19,8 +21,14 @@ export class Element {
   @Column()
   type: 'text' | 'button' | 'image';
 
-  @ManyToMany((document) => Document, (document) => document.elements)
-  documents?: Document[];
+  @OneToMany(
+    () => ElementToDocument,
+    (elementToDocuments) => elementToDocuments.element,
+  )
+  public elementToDocuments: ElementToDocument[];
+
+  // @ManyToMany((document) => Document, (document) => document.elements)
+  // documents?: Document[];
 
   @Column({ type: 'timestamp', default: 'now()' })
   updatedAt: Date;

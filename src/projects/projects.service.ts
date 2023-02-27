@@ -42,7 +42,6 @@ export class ProjectsService {
   }
 
   async create(createProjectDto: CreateProjectDto) {
-    console.log('create project dto:', createProjectDto);
     const project = this.projectsRepository.create({
       ...createProjectDto,
       documents: [],

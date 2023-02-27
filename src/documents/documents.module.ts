@@ -5,9 +5,12 @@ import { Element } from '../elements/entities/element.entity';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { DocumentsController } from './documents.controller';
 import { Project } from '../projects/entities/project.entity';
+import { ElementToDocument } from './elementToDocument.entity';
 
 @Module({
-  imports: [TypeOrmModule.forFeature([Project, Document, Element])],
+  imports: [
+    TypeOrmModule.forFeature([Project, Document, Element, ElementToDocument]),
+  ],
   providers: [DocumentsService],
   controllers: [DocumentsController],
 })

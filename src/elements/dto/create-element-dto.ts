@@ -10,6 +10,9 @@ export class CreateElementDto {
   })
   readonly type: 'text' | 'button' | 'image';
 
+  @ApiProperty({ description: 'The order of an element.' })
+  readonly order: number;
+
   @ApiProperty({ example: [] })
   readonly documents?: Document[];
 }

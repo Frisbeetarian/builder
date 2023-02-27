@@ -3,11 +3,13 @@ import {
   Entity,
   JoinTable,
   ManyToMany,
+  OneToMany,
   PrimaryGeneratedColumn,
 } from 'typeorm';
 
 import { Element } from '../../elements/entities/element.entity';
 import { Project } from '../../projects/entities/project.entity';
+import { ElementToDocument } from '../elementToDocument.entity';
 
 @Entity()
 export class Document {
@@ -17,11 +19,17 @@ export class Document {
   @Column()
   name: string;
 
-  @JoinTable()
-  @ManyToMany((element) => Element, (element) => element.documents, {
-    cascade: true,
-  })
-  elements?: Element[];
+  @OneToMany(
+    () => ElementToDocument,
+    (elementToDocument) => elementToDocument.document,
+  )
+  public elementToDocuments: ElementToDocument[];
+
+  // @JoinTable()
+  // @ManyToMany((element) => Element, (element) => element.documents, {
+  //   cascade: true,
+  // })
+  // elements?: Element[];
 
   @ManyToMany((project) => Project, (project) => project.documents)
   projects: Project[];
