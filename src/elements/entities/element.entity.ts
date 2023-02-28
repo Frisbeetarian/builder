@@ -1,6 +1,6 @@
 import { Column, Entity, OneToMany, PrimaryGeneratedColumn } from 'typeorm';
 
-import { ElementToDocument } from '../../documents/elementToDocument.entity';
+import { ElementToDocument } from '../../documents/entities/elementToDocument.entity';
 
 @Entity()
 export class Element {

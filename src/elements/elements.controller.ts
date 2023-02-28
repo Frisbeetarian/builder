@@ -19,6 +19,7 @@ import { CreateElementDto } from './dto/create-element-dto';
 import { UpdateElementDto } from './dto/update-element-dto';
 import { Element } from './entities/element.entity';
 import { AssignElementToDocumentDto } from './dto/assign-element-to-document-dto';
+import { UpdateElementToDocumentDto } from './dto/update-element-to-document-dto';
 
 @ApiTags('elements')
 @Controller('elements')
@@ -47,6 +48,15 @@ export class ElementsController {
   ): Promise<Element> {
     return this.elementsService.assignElementToDocument(
       assignElementToDocumentDto,
+    );
+  }
+
+  @Patch('updateElementInDocument')
+  updateElementInDocument(
+    @Body() updateElementInDocumentDto: UpdateElementToDocumentDto,
+  ): Promise<Element> {
+    return this.elementsService.updateElementInDocument(
+      updateElementInDocumentDto,
     );
   }
 

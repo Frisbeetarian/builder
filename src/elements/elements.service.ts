@@ -14,8 +14,9 @@ import { PaginationQueryDto } from '../common/dto/pagination-query.dto';
 import { Element } from './entities/element.entity';
 import { CreateElementDto } from './dto/create-element-dto';
 import { UpdateElementDto } from './dto/update-element-dto';
-import { ElementToDocument } from '../documents/elementToDocument.entity';
+import { ElementToDocument } from '../documents/entities/elementToDocument.entity';
 import { AssignElementToDocumentDto } from './dto/assign-element-to-document-dto';
+import { UpdateElementToDocumentDto } from './dto/update-element-to-document-dto';
 
 @Injectable()
 export class ElementsService {
@@ -56,13 +57,9 @@ export class ElementsService {
 
   async create(createElementDto: CreateElementDto): Promise<Element> {
     try {
-      console.log('create element dto:', createElementDto);
-
       const element = await this.elementsRepository.save({
         ...createElementDto,
       });
-
-      console.log('savedElement:', element);
 
       const elementToDocuments = createElementDto.documents.map((document) => {
         return {
@@ -71,8 +68,6 @@ export class ElementsService {
           documentUuid: document.uuid,
         };
       });
-
-      console.log('elementToDocuments:', elementToDocuments);
 
       const association = await this.elementToDocumentsRepository.create({
         ...elementToDocuments[0],
@@ -152,6 +147,68 @@ export class ElementsService {
 
       return element;
     }
+  }
+  async updateElementInDocument(
+    updateElementInDocumentDto: UpdateElementToDocumentDto,
+  ): Promise<Element> {
+    const element = await this.elementsRepository.findOne({
+      where: { uuid: updateElementInDocumentDto.elementUuid },
+      relations: ['elementToDocuments'],
+    });
+
+    const document = await this.documentsRepository.findOne({
+      where: { uuid: updateElementInDocumentDto.documentUuid },
+      relations: ['elementToDocuments'],
+    });
+
+    if (!element) {
+      throw new NotFoundException(
+        `Element #${updateElementInDocumentDto.elementUuid} not found`,
+      );
+    }
+
+    if (!document) {
+      throw new NotFoundException(
+        `Document #${updateElementInDocumentDto.documentUuid} not found`,
+      );
+    }
+
+    const elementToDocument = await this.elementToDocumentsRepository.findOne({
+      where: {
+        uuid: updateElementInDocumentDto.relationshipUuid,
+      },
+    });
+
+    if (!elementToDocument) {
+      throw new Error(
+        `Element #${updateElementInDocumentDto.elementUuid} not assigned to document #${updateElementInDocumentDto.documentUuid}`,
+      );
+    }
+
+    const elementsToDocument = await this.elementToDocumentsRepository.find({
+      where: {
+        elementUuid: updateElementInDocumentDto.elementUuid,
+        documentUuid: updateElementInDocumentDto.documentUuid,
+      },
+    });
+
+    if (elementsToDocument) {
+      const elementWithSameOrder = elementsToDocument.find(
+        (element) => element.order === Number(updateElementInDocumentDto.order),
+      );
+
+      if (elementWithSameOrder) {
+        throw new BadRequestException(
+          `Element #${updateElementInDocumentDto.elementUuid} with same order already assigned to document #${updateElementInDocumentDto.documentUuid}`,
+        );
+      }
+    }
+
+    elementToDocument.order = updateElementInDocumentDto.order;
+
+    await this.elementToDocumentsRepository.save(elementToDocument);
+
+    return element;
   }
 
   async update(uuid: string, updateElementDto: UpdateElementDto) {

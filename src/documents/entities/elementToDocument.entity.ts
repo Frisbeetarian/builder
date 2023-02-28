@@ -5,8 +5,8 @@ import {
   PrimaryGeneratedColumn,
   Index,
 } from 'typeorm';
-import { Element } from '../elements/entities/element.entity';
-import { Document } from './entities/document.entity';
+import { Element } from '../../elements/entities/element.entity';
+import { Document } from './document.entity';
 
 @Entity()
 @Index(['documentUuid', 'order'], { unique: true })
@@ -28,4 +28,10 @@ export class ElementToDocument {
 
   @ManyToOne(() => Document, (document) => document.elementToDocuments)
   public document: Document;
+
+  @Column({ type: 'timestamp', default: 'now()' })
+  updatedAt: Date;
+
+  @Column({ type: 'timestamp', default: 'now()' })
+  createdAt: Date;
 }

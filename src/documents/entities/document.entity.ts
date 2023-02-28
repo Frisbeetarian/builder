@@ -9,7 +9,7 @@ import {
 
 import { Element } from '../../elements/entities/element.entity';
 import { Project } from '../../projects/entities/project.entity';
-import { ElementToDocument } from '../elementToDocument.entity';
+import { ElementToDocument } from './elementToDocument.entity';
 
 @Entity()
 export class Document {
