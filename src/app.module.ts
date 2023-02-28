@@ -5,7 +5,6 @@ import { AppController } from './app.controller';
 import { AppService } from './app.service';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { DatabaseModule } from './database/database.module';
-import { CommonModule } from './common/common.module';
 import { ProjectsModule } from './projects/projects.module';
 import { DocumentsModule } from './documents/documents.module';
 import { ElementsModule } from './elements/elements.module';
@@ -29,7 +28,6 @@ import appConfig from './config/app.config';
       }),
     }),
     DatabaseModule,
-    // CommonModule,
     ProjectsModule,
     DocumentsModule,
     ElementsModule,
