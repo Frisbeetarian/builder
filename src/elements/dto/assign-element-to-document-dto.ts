@@ -1,5 +1,4 @@
 import { ApiProperty } from '@nestjs/swagger';
-import { Document } from '../../documents/entities/document.entity';
 export class AssignElementToDocumentDto {
   @ApiProperty({
     description: 'The UUID of the element being assigned to the document.',

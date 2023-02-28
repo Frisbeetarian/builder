@@ -17,6 +17,7 @@ import { UpdateElementDto } from './dto/update-element-dto';
 import { ElementToDocument } from '../documents/entities/elementToDocument.entity';
 import { AssignElementToDocumentDto } from './dto/assign-element-to-document-dto';
 import { UpdateElementToDocumentDto } from './dto/update-element-to-document-dto';
+import { RemoveElementFromDocumentDto } from './dto/remove-element-from-document-dto';
 
 @Injectable()
 export class ElementsService {
@@ -49,7 +50,7 @@ export class ElementsService {
   findAll(paginationQuery: PaginationQueryDto): Promise<Element[]> {
     const { limit, offset } = paginationQuery;
     return this.elementsRepository.find({
-      relations: ['documents'],
+      relations: ['elementToDocuments'],
       skip: offset,
       take: limit,
     });
@@ -236,6 +237,22 @@ export class ElementsService {
   async remove(uuid: string) {
     const element = await this.findOne(uuid);
     return this.elementsRepository.remove(element);
+  }
+
+  async removeElementFromDocument(relationshipUuid: string): Promise<boolean> {
+    const elementToDocument = await this.elementToDocumentsRepository.findOne({
+      where: {
+        uuid: relationshipUuid,
+      },
+    });
+
+    if (!elementToDocument) {
+      throw new NotFoundException(`Element not assigned to document.`);
+    }
+
+    await this.elementToDocumentsRepository.remove(elementToDocument);
+
+    return true;
   }
 
   private async preloadDocumentByUuid(uuid: string): Promise<Document> {

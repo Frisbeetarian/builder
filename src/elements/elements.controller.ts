@@ -11,7 +11,7 @@ import {
   Post,
   Query,
 } from '@nestjs/common';
-import { ApiTags } from '@nestjs/swagger';
+import { ApiProperty, ApiTags } from '@nestjs/swagger';
 
 import { PaginationQueryDto } from '../common/dto/pagination-query.dto';
 import { ElementsService } from './elements.service';
@@ -20,6 +20,7 @@ import { UpdateElementDto } from './dto/update-element-dto';
 import { Element } from './entities/element.entity';
 import { AssignElementToDocumentDto } from './dto/assign-element-to-document-dto';
 import { UpdateElementToDocumentDto } from './dto/update-element-to-document-dto';
+import { RemoveElementFromDocumentDto } from './dto/remove-element-from-document-dto';
 
 @ApiTags('elements')
 @Controller('elements')
@@ -51,6 +52,14 @@ export class ElementsController {
     );
   }
 
+  @Patch(':uuid')
+  update(
+    @Param('uuid') uuid: string,
+    @Body() updateElementDto: UpdateElementDto,
+  ) {
+    return this.elementsService.update(uuid, updateElementDto);
+  }
+
   @Patch('updateElementInDocument')
   updateElementInDocument(
     @Body() updateElementInDocumentDto: UpdateElementToDocumentDto,
@@ -60,16 +69,15 @@ export class ElementsController {
     );
   }
 
-  @Patch(':uuid')
-  update(
-    @Param('uuid') uuid: string,
-    @Body() updateElementDto: UpdateElementDto,
-  ) {
-    return this.elementsService.update(uuid, updateElementDto);
-  }
-
   @Delete(':uuid')
   remove(@Param('uuid') uuid: string) {
     return this.elementsService.remove(uuid);
+  }
+
+  @Delete('removeElementFromDocument/:relationshipUuid')
+  removeElementFromDocument(
+    @Param('relationshipUuid') relationshipUuid: string,
+  ) {
+    return this.elementsService.removeElementFromDocument(relationshipUuid);
   }
 }
