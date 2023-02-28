@@ -7,10 +7,10 @@ export class CreateDocumentDto {
   @ApiProperty({ description: 'The name of a document.' })
   readonly name: string;
 
-  @ApiProperty({ example: [] })
+  @ApiProperty({ example: [Project] })
   readonly projects: Project[];
 
-  @ApiProperty({ example: [] })
+  @ApiProperty({ example: [Element] })
   @IsOptional()
   readonly elements?: Element[];
 }

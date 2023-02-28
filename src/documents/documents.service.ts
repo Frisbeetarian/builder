@@ -97,8 +97,8 @@ export class DocumentsService {
     const projects =
       updateDocumentDto.projects &&
       (await Promise.all(
-        updateDocumentDto.projects.map((document) =>
-          this.preloadProjectByUuid(document.uuid),
+        updateDocumentDto.projects.map((project) =>
+          this.preloadProjectByUuid(project.uuid),
         ),
       ));
 
@@ -116,11 +116,11 @@ export class DocumentsService {
   }
 
   async remove(uuid: string) {
-    const project = await this.findOne(uuid);
-    return this.documentsRepository.remove(project);
+    const document = await this.findOne(uuid);
+    return this.documentsRepository.remove(document);
   }
 
-  private async preloadProjectByUuid(uuid: string): Promise<Project> {
+  async preloadProjectByUuid(uuid: string): Promise<Project> {
     const existingProject = await this.projectsRepository.findOne({
       where: { uuid: uuid },
     });
