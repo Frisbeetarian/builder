@@ -40,7 +40,11 @@ export class DocumentsService {
           where: { uuid: elementInDocument.elementUuid },
         });
 
-        return { ...element, order: elementInDocument.order };
+        return {
+          ...element,
+          order: elementInDocument.order,
+          relationshipUuid: elementInDocument.uuid,
+        };
       }),
     );
 

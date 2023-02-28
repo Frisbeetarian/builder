@@ -20,7 +20,6 @@ import { UpdateElementDto } from './dto/update-element-dto';
 import { Element } from './entities/element.entity';
 import { AssignElementToDocumentDto } from './dto/assign-element-to-document-dto';
 import { UpdateElementToDocumentDto } from './dto/update-element-to-document-dto';
-import { RemoveElementFromDocumentDto } from './dto/remove-element-from-document-dto';
 
 @ApiTags('elements')
 @Controller('elements')

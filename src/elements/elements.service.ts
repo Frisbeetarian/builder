@@ -17,7 +17,6 @@ import { UpdateElementDto } from './dto/update-element-dto';
 import { ElementToDocument } from '../documents/entities/elementToDocument.entity';
 import { AssignElementToDocumentDto } from './dto/assign-element-to-document-dto';
 import { UpdateElementToDocumentDto } from './dto/update-element-to-document-dto';
-import { RemoveElementFromDocumentDto } from './dto/remove-element-from-document-dto';
 
 @Injectable()
 export class ElementsService {
