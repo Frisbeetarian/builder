@@ -27,7 +27,7 @@ export class DocumentsService {
   async findOne(uuid: string) {
     const document = await this.documentsRepository.findOne({
       where: { uuid: uuid },
-      relations: ['projects', 'elementToDocuments'],
+      relations: ['projects', 'elementToDocuments.element'],
     });
 
     if (!document) {
@@ -36,9 +36,7 @@ export class DocumentsService {
 
     const elements = await Promise.all(
       document.elementToDocuments.map(async (elementInDocument) => {
-        const element = await this.elementsRepository.findOne({
-          where: { uuid: elementInDocument.elementUuid },
-        });
+        const element = elementInDocument.element;
 
         return {
           ...element,
