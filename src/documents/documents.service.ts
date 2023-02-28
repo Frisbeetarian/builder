@@ -53,13 +53,38 @@ export class DocumentsService {
     return { ...document, elements };
   }
 
-  findAll(paginationQuery: PaginationQueryDto): Promise<Document[]> {
+  async findAll(paginationQuery: PaginationQueryDto): Promise<Document[]> {
     const { limit, offset } = paginationQuery;
-    return this.documentsRepository.find({
-      relations: ['projects'],
+    let documents = await this.documentsRepository.find({
+      relations: ['projects', 'elementToDocuments.element'],
       skip: offset,
       take: limit,
     });
+
+    if (!documents) {
+      throw new NotFoundException(`Documents not found`);
+    }
+    documents = await Promise.all(
+      documents.map(async (document) => {
+        const elements = await Promise.all(
+          document.elementToDocuments.map(async (elementInDocument) => {
+            const element = elementInDocument.element;
+
+            delete document.elementToDocuments;
+
+            return {
+              ...element,
+              order: elementInDocument.order,
+              relationshipUuid: elementInDocument.uuid,
+            };
+          }),
+        );
+
+        return { ...document, elements };
+      }),
+    );
+
+    return documents;
   }
 
   async create(createDocumentDto: CreateDocumentDto) {

@@ -22,6 +22,9 @@ export class Document {
   @OneToMany(
     () => ElementToDocument,
     (elementToDocument) => elementToDocument.document,
+    {
+      cascade: true,
+    },
   )
   public elementToDocuments: ElementToDocument[];
 

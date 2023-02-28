@@ -23,7 +23,9 @@ export class ElementToDocument {
   @Column()
   public order: number;
 
-  @ManyToOne(() => Element, (element) => element.elementToDocuments)
+  @ManyToOne(() => Element, (element) => element.elementToDocuments, {
+    cascade: true,
+  })
   public element: Element;
 
   @ManyToOne(() => Document, (document) => document.elementToDocuments)

@@ -1,8 +1,5 @@
 import {
   BadRequestException,
-  HttpException,
-  HttpStatus,
-  Inject,
   Injectable,
   NotFoundException,
 } from '@nestjs/common';
@@ -14,9 +11,9 @@ import { PaginationQueryDto } from '../common/dto/pagination-query.dto';
 import { Element } from './entities/element.entity';
 import { CreateElementDto } from './dto/create-element-dto';
 import { UpdateElementDto } from './dto/update-element-dto';
-import { ElementToDocument } from '../documents/entities/elementToDocument.entity';
 import { AssignElementToDocumentDto } from './dto/assign-element-to-document-dto';
 import { UpdateElementToDocumentDto } from './dto/update-element-to-document-dto';
+import { ElementToDocument } from '../documents/entities/elementToDocument.entity';
 
 @Injectable()
 export class ElementsService {
@@ -212,13 +209,13 @@ export class ElementsService {
   }
 
   async update(uuid: string, updateElementDto: UpdateElementDto) {
-    const documents =
-      updateElementDto.documents &&
-      (await Promise.all(
-        updateElementDto.documents.map((document) =>
-          this.preloadDocumentByUuid(document.uuid),
-        ),
-      ));
+    // const documents =
+    //   updateElementDto.documents &&
+    //   (await Promise.all(
+    //     updateElementDto.documents.map((document) =>
+    //       this.preloadDocumentByUuid(document.uuid),
+    //     ),
+    //   ));
 
     const element = await this.elementsRepository.preload({
       uuid,
