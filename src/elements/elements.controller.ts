@@ -4,6 +4,7 @@ import {
   Delete,
   Get,
   HttpCode,
+  HttpException,
   HttpStatus,
   Param,
   Patch,
@@ -17,6 +18,7 @@ import { ElementsService } from './elements.service';
 import { CreateElementDto } from './dto/create-element-dto';
 import { UpdateElementDto } from './dto/update-element-dto';
 import { Element } from './entities/element.entity';
+import { AssignElementToDocumentDto } from './dto/assign-element-to-document-dto';
 
 @ApiTags('elements')
 @Controller('elements')
@@ -37,6 +39,15 @@ export class ElementsController {
   @HttpCode(HttpStatus.GONE)
   create(@Body() createElementDto: CreateElementDto): Promise<Element> {
     return this.elementsService.create(createElementDto);
+  }
+
+  @Post('assignElementToDocument')
+  assignElementToDocument(
+    @Body() assignElementToDocumentDto: AssignElementToDocumentDto,
+  ): Promise<Element> {
+    return this.elementsService.assignElementToDocument(
+      assignElementToDocumentDto,
+    );
   }
 
   @Patch(':uuid')

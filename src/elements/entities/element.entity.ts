@@ -1,13 +1,5 @@
-import {
-  Column,
-  Entity,
-  JoinTable,
-  ManyToMany,
-  OneToMany,
-  PrimaryGeneratedColumn,
-} from 'typeorm';
+import { Column, Entity, OneToMany, PrimaryGeneratedColumn } from 'typeorm';
 
-import { Document } from '../../documents/entities/document.entity';
 import { ElementToDocument } from '../../documents/elementToDocument.entity';
 
 @Entity()

@@ -1,4 +1,11 @@
-import { Inject, Injectable, NotFoundException } from '@nestjs/common';
+import {
+  BadRequestException,
+  HttpException,
+  HttpStatus,
+  Inject,
+  Injectable,
+  NotFoundException,
+} from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { DataSource, Repository } from 'typeorm';
 
@@ -8,6 +15,7 @@ import { Element } from './entities/element.entity';
 import { CreateElementDto } from './dto/create-element-dto';
 import { UpdateElementDto } from './dto/update-element-dto';
 import { ElementToDocument } from '../documents/elementToDocument.entity';
+import { AssignElementToDocumentDto } from './dto/assign-element-to-document-dto';
 
 @Injectable()
 export class ElementsService {
@@ -50,39 +58,99 @@ export class ElementsService {
     try {
       console.log('create element dto:', createElementDto);
 
-      const element = await this.elementsRepository.create({
+      const element = await this.elementsRepository.save({
         ...createElementDto,
       });
-      const savedElement = await this.elementsRepository.save(
-        element as Element,
-      );
 
-      console.log('savedElement:', savedElement);
+      console.log('savedElement:', element);
 
       const elementToDocuments = createElementDto.documents.map((document) => {
         return {
           order: createElementDto.order,
-          elementUuid: savedElement.uuid,
+          elementUuid: element.uuid,
           documentUuid: document.uuid,
         };
       });
 
       console.log('elementToDocuments:', elementToDocuments);
 
-      const dd = await this.elementToDocumentsRepository.create({
+      const association = await this.elementToDocumentsRepository.create({
         ...elementToDocuments[0],
       });
 
-      await this.elementToDocumentsRepository.save(dd);
+      await this.elementToDocumentsRepository.save(association);
 
-      // const element = await this.elementsRepository.preload({
-      //
-      // })
-
-      return savedElement;
+      return element;
     } catch (e) {
       console.log(e);
       throw new Error(e.message);
+    }
+  }
+
+  async assignElementToDocument(
+    assignElementToDocumentDto: AssignElementToDocumentDto,
+  ): Promise<Element> {
+    const element = await this.elementsRepository.findOne({
+      where: { uuid: assignElementToDocumentDto.elementUuid },
+      relations: ['elementToDocuments'],
+    });
+
+    const document = await this.documentsRepository.findOne({
+      where: { uuid: assignElementToDocumentDto.documentUuid },
+      relations: ['elementToDocuments'],
+    });
+
+    if (!element) {
+      throw new NotFoundException(
+        `Element #${assignElementToDocumentDto.elementUuid} not found`,
+      );
+    }
+
+    if (!document) {
+      throw new NotFoundException(
+        `Document #${assignElementToDocumentDto.documentUuid} not found`,
+      );
+    }
+
+    const elementsToDocument = await this.elementToDocumentsRepository.find({
+      where: {
+        elementUuid: assignElementToDocumentDto.elementUuid,
+        documentUuid: assignElementToDocumentDto.documentUuid,
+      },
+    });
+
+    if (elementsToDocument) {
+      const elementWithSameOrder = elementsToDocument.find(
+        (element) => element.order === Number(assignElementToDocumentDto.order),
+      );
+
+      if (elementWithSameOrder) {
+        throw new BadRequestException(
+          `Element #${assignElementToDocumentDto.elementUuid} with same order already assigned to document #${assignElementToDocumentDto.documentUuid}`,
+        );
+      } else {
+        const newElementToDocument =
+          await this.elementToDocumentsRepository.create({
+            elementUuid: assignElementToDocumentDto.elementUuid,
+            documentUuid: assignElementToDocumentDto.documentUuid,
+            order: assignElementToDocumentDto.order,
+          });
+
+        await this.elementToDocumentsRepository.save(newElementToDocument);
+
+        return element;
+      }
+    } else {
+      const newElementToDocument =
+        await this.elementToDocumentsRepository.create({
+          elementUuid: assignElementToDocumentDto.elementUuid,
+          documentUuid: assignElementToDocumentDto.documentUuid,
+          order: assignElementToDocumentDto.order,
+        });
+
+      await this.elementToDocumentsRepository.save(newElementToDocument);
+
+      return element;
     }
   }
 
