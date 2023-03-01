@@ -6,6 +6,7 @@ import { Document } from '../documents/entities/document.entity';
 import { Element } from './entities/element.entity';
 import { NotFoundException } from '@nestjs/common';
 import { ElementToDocument } from '../documents/entities/elementToDocument.entity';
+import { CreateElementDto } from './dto/create-element-dto';
 
 type MockRepository<T = any> = Partial<Record<keyof Repository<T>, jest.Mock>>;
 const createMockRepository = <T = any>(): MockRepository<T> => ({
@@ -95,10 +96,12 @@ describe('ElementsService', () => {
             document: {
               uuid: '9778d4f2-8db8-4b01-9196-73422385ddb2',
               name: 'Document 1',
-              project: {
-                uuid: '9778d4f2-8db8-4b01-9196-73422385ddb2',
-                name: 'Project 1',
-              },
+              projects: [
+                {
+                  uuid: '9778d4f2-8db8-4b01-9196-73422385ddb2',
+                  name: 'Project 1',
+                },
+              ],
             },
           },
           {
@@ -107,10 +110,12 @@ describe('ElementsService', () => {
             document: {
               uuid: '9778d4f2-8db8-4b01-9196-73422385ddb2',
               name: 'Document 2',
-              project: {
-                uuid: '9778d4f2-8db8-4b01-9196-73422385ddb2',
-                name: 'Project 2',
-              },
+              projects: [
+                {
+                  uuid: '9778d4f2-8db8-4b01-9196-73422385ddb2',
+                  name: 'Project 2',
+                },
+              ],
             },
           },
         ];
@@ -129,15 +134,33 @@ describe('ElementsService', () => {
   });
 
   describe('create', () => {
-    it('should create an element', async () => {
-      const createElementDto = {
-        uuid: '9778d4f2-8db8-4b01-9196-73422385ddb2',
-        name: 'Element 1',
-        order: 3,
-        type: 'text' as 'text' | 'image' | 'button',
-        document: {
+    const createElementDto: CreateElementDto = {
+      name: 'Element 1',
+      type: 'text' as 'text' | 'image' | 'button',
+      order: 3,
+    };
+
+    const expectedElement = {
+      uuid: '9778d4f2-8db8-4b01-9196-73422385ddb2',
+      name: 'Element 1',
+      order: 3,
+      type: 'text' as 'text' | 'image' | 'button',
+      documents: [
+        {
           uuid: '9778d4f2-8db8-4b01-9196-73422385ddb2',
           name: 'Document 1',
+          updatedAt: new Date(),
+          createdAt: new Date(),
+          elementsToDocuments: [
+            {
+              uuid: '9778d4f2-8db8-4b01-9196-73422385ddb2',
+              order: 3,
+              elementUuid: '9778d4f2-8db8-4b01-9196-73422385ddb2',
+              documentUuid: '9778d4f2-8db8-4b01-9196-73422385ddb2',
+              updatedAt: new Date(),
+              createdAt: new Date(),
+            },
+          ],
           projects: [
             {
               uuid: '9778d4f2-8db8-4b01-9196-73422385ddb2',
@@ -145,11 +168,37 @@ describe('ElementsService', () => {
             },
           ],
         },
-      };
-      elementsRepository.create.mockReturnValue(createElementDto);
-      elementsRepository.save.mockResolvedValue(createElementDto);
-      const element = await service.create(createElementDto);
-      expect(element).toEqual(createElementDto);
+      ],
+    };
+
+    const createdAssociation = {
+      order: 1,
+      elementUuid: 'element-uuid',
+      documentUuid: 'document-uuid',
+    };
+
+    it('should create a new element and its association with a document', async () => {
+      elementsRepository.save.mockResolvedValue(expectedElement);
+      elementsRepository.create.mockReturnValue(createdAssociation);
+      elementsRepository.save.mockResolvedValue(undefined);
+
+      const result = await service.create(createElementDto);
+
+      expect(elementsRepository.save).toHaveBeenCalledWith(createElementDto);
+      expect(elementsRepository.create).toHaveBeenCalledWith(
+        createdAssociation,
+      );
+      expect(elementsRepository.save).toHaveBeenCalledWith(createdAssociation);
+      expect(result).toEqual(expectedElement);
+    });
+
+    it('should throw an error if any error occurs during creation', async () => {
+      const errorMessage = 'Internal server error';
+      elementsRepository.save.mockRejectedValue(new Error(errorMessage));
+
+      await expect(service.create(createElementDto)).rejects.toThrow(
+        errorMessage,
+      );
     });
   });
 
@@ -224,94 +273,12 @@ describe('ElementsService', () => {
     describe('when element with UUID exists', () => {
       it('should assign an element to a document', async () => {
         const uuid = '9778d4f2-8db8-4b01-9196-73422385ddb2';
-        const expectedElement = {
-          uuid,
-          name: 'Element 1',
-          document: {
-            uuid: '9778d4f2-8db8-4b01-9196-73422385ddb2',
-            name: 'Document 1',
-            project: {
-              uuid: '9778d4f2-8db8-4b01-9196-73422385ddb2',
-              name: 'Project 1',
-            },
-          },
+        const assignElementToDocumentDto = {
+          elementUuid: '9778d4f2-8db8-4b01-9196-73422385ddb2',
+          documentUuid: '9778d4f2-8db8-4b01-9196-73422385dfb2',
+          order: 3,
         };
-        const expectedDocument = {
-          uuid: '9778d4f2-8db8-4b01-9196-73422385ddb2',
-          name: 'Document 1',
-          project: {
-            uuid: '9778d4f2-8db8-4b01-9196-73422385ddb2',
-            name: 'Project 1',
-          },
-        };
-        elementsRepository.preload.mockResolvedValue(expectedElement);
-        elementsRepository.save.mockResolvedValue(expectedElement);
-        const element = await service.assignElementToDocument(
-          uuid,
-          expectedDocument,
-        );
-        expect(element).toEqual(expectedElement);
-      });
-    });
-    describe('when element with UUID does not exist', () => {
-      it('should throw a NotFoundException', async () => {
-        const uuid = '9778d4f2-8db8-4b01-9196-73422385ddb2';
-        elementsRepository.preload.mockResolvedValue(undefined);
-        await expect(service.assignElementToDocument(uuid, {})).rejects.toThrow(
-          NotFoundException,
-        );
-      });
-    });
-  });
 
-  describe('updateElementInDocument', () => {
-    describe('when element with UUID exists', () => {
-      it('should update an element in a document', async () => {
-        const uuid = '9778d4f2-8db8-4b01-9196-73422385ddb2';
-        const expectedElement = {
-          uuid,
-          name: 'Element 1',
-          document: {
-            uuid: '9778d4f2-8db8-4b01-9196-73422385ddb2',
-            name: 'Document 1',
-            project: {
-              uuid: '9778d4f2-8db8-4b01-9196-73422385ddb2',
-              name: 'Project 1',
-            },
-          },
-        };
-        const expectedDocument = {
-          uuid: '9778d4f2-8db8-4b01-9196-73422385ddb2',
-          name: 'Document 1',
-          project: {
-            uuid: '9778d4f2-8db8-4b01-9196-73422385ddb2',
-            name: 'Project 1',
-          },
-        };
-        elementsRepository.preload.mockResolvedValue(expectedElement);
-        elementsRepository.save.mockResolvedValue(expectedElement);
-        const element = await service.updateElementInDocument(
-          uuid,
-          expectedDocument,
-        );
-        expect(element).toEqual(expectedElement);
-      });
-    });
-    describe('when element with UUID does not exist', () => {
-      it('should throw a NotFoundException', async () => {
-        const uuid = '9778d4f2-8db8-4b01-9196-73422385ddb2';
-        elementsRepository.preload.mockResolvedValue(undefined);
-        await expect(service.updateElementInDocument(uuid, {})).rejects.toThrow(
-          NotFoundException,
-        );
-      });
-    });
-  });
-
-  describe('removeElementFromDocument', () => {
-    describe('when element with UUID exists', () => {
-      it('should remove an element from a document', async () => {
-        const uuid = '9778d4f2-8db8-4b01-9196-73422385ddb2';
         const expectedElement = {
           uuid,
           name: 'Element 1',
@@ -326,23 +293,100 @@ describe('ElementsService', () => {
             ],
           },
         };
-        const expectedDocument = {
-          uuid: '9778d4f2-8db8-4b01-9196-73422385ddb2',
-          name: 'Document 1',
-          projects: [
-            {
+
+        elementsRepository.preload.mockResolvedValue(expectedElement);
+        elementsRepository.save.mockResolvedValue(expectedElement);
+        const element = await service.assignElementToDocument(
+          assignElementToDocumentDto,
+        );
+        expect(element).toEqual(expectedElement);
+      });
+    });
+    describe('when element with UUID does not exist', () => {
+      it('should throw a NotFoundException', async () => {
+        const assignElementToDocumentDto = {
+          elementUuid: '9778d4f2-8db8-4b01-9196-73422385ddb2',
+          documentUuid: '9778d4f2-8db8-4b01-9196-73422385dfb2',
+          order: 3,
+        };
+
+        elementsRepository.preload.mockResolvedValue(undefined);
+        await expect(
+          service.assignElementToDocument(assignElementToDocumentDto),
+        ).rejects.toThrow(NotFoundException);
+      });
+    });
+  });
+
+  describe('updateElementInDocument', () => {
+    describe('when element with UUID exists', () => {
+      it('should update an element in a document', async () => {
+        const uuid = '9778d4f2-8db8-4b01-9196-73422385ddb2';
+
+        const updateElementInDocumentDto = {
+          relationshipUuid: '9778d2f2-8db8-4b01-9196-73422385ddb2',
+          elementUuid: '9778d4f2-8db8-4b01-9196-73422385ddb2',
+          documentUuid: '9778d4f2-8db8-4b01-9196-73422385dfb2',
+          order: 3,
+        };
+
+        const expectedElement = {
+          uuid,
+          name: 'Element 1',
+          document: {
+            uuid: '9778d4f2-8db8-4b01-9196-73422385ddb2',
+            name: 'Document 1',
+            project: {
               uuid: '9778d4f2-8db8-4b01-9196-73422385ddb2',
               name: 'Project 1',
             },
-          ],
+          },
         };
+
         elementsRepository.preload.mockResolvedValue(expectedElement);
         elementsRepository.save.mockResolvedValue(expectedElement);
-        const element = await service.removeElementFromDocument(
-          uuid,
-          expectedDocument,
+        const element = await service.updateElementInDocument(
+          updateElementInDocumentDto,
         );
         expect(element).toEqual(expectedElement);
+      });
+    });
+    describe('when element with UUID does not exist', () => {
+      it('should throw a NotFoundException', async () => {
+        const updateElementInDocumentDto = {
+          relationshipUuid: '9778d2f2-8db8-4b01-9196-73422385ddb2',
+          elementUuid: '9778d4f2-8db8-4b01-9196-73422385ddb2',
+          documentUuid: '9778d4f2-8db8-4b01-9196-73422385dfb2',
+          order: 3,
+        };
+
+        elementsRepository.preload.mockResolvedValue(undefined);
+
+        await expect(
+          service.updateElementInDocument(updateElementInDocumentDto),
+        ).rejects.toThrow(NotFoundException);
+      });
+    });
+  });
+
+  describe('removeElementFromDocument', () => {
+    describe('when element with UUID exists', () => {
+      it('should remove an element from a document', async () => {
+        const relationshipUuid = '9778d4f2-8db8-4b01-9196-73422385ddb2';
+
+        const expectedRelationship = {
+          uuid: relationshipUuid,
+          elementUuid: '',
+          documentUuid: '',
+          order: 0,
+        };
+
+        elementsRepository.preload.mockResolvedValue(expectedRelationship);
+        elementsRepository.save.mockResolvedValue(expectedRelationship);
+        const element = await service.removeElementFromDocument(
+          relationshipUuid,
+        );
+        expect(element).toEqual(true);
       });
     });
 

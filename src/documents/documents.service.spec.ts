@@ -127,7 +127,6 @@ describe('DocumentsService', () => {
   describe('update', () => {
     describe('when document with UUID exists', () => {
       it('should update document with valid UUID and DTO', async () => {
-        // Arrange
         const uuid = '9778d4f2-8db8-4b01-9196-73422385ddb2';
 
         const updateDocumentDto = {
@@ -138,32 +137,25 @@ describe('DocumentsService', () => {
           projects: [],
         };
 
-        const documentMock = {
-          // Add any necessary properties to the document mock
-          uuid,
-          ...updateDocumentDto,
-        };
         const projectMocks = [];
-        documentRepository.preload.mockResolvedValueOnce(documentMock);
-        documentRepository.save.mockResolvedValueOnce(documentMock);
+        documentRepository.preload.mockResolvedValueOnce(updateDocumentDto);
+        documentRepository.save.mockResolvedValueOnce(updateDocumentDto);
         service.preloadProjectByUuid = jest
           .fn()
           .mockImplementation((uuid: string) => {
             return Promise.resolve(projectMocks.find((p) => p.uuid === uuid));
           });
 
-        // Act
         const result = await service.update(uuid, updateDocumentDto);
 
-        // Assert
         expect(documentRepository.preload).toHaveBeenCalledWith({
           uuid,
           ...updateDocumentDto,
           projects: projectMocks,
         });
-        // expect(service.preloadProjectByUuid).toHaveBeenCalledTimes(2);
-        expect(documentRepository.save).toHaveBeenCalledWith(documentMock);
-        expect(result).toEqual(documentMock);
+
+        expect(documentRepository.save).toHaveBeenCalledWith(updateDocumentDto);
+        expect(result).toEqual(updateDocumentDto);
       });
 
       describe('when document with UUID does not exist', () => {
@@ -178,13 +170,11 @@ describe('DocumentsService', () => {
           };
           documentRepository.preload.mockResolvedValueOnce(null);
 
-          // Act and Assert
           await expect(service.update(uuid, updateDocumentDto)).rejects.toThrow(
             new NotFoundException(`Document #${uuid} not found`),
           );
           documentRepository.preload.mockResolvedValueOnce(null);
 
-          // Act and Assert
           await expect(service.update(uuid, updateDocumentDto)).rejects.toThrow(
             new NotFoundException(`Document #${uuid} not found`),
           );
