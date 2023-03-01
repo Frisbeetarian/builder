@@ -27,3 +27,6 @@ To run tests for elements service run
 
 e2e tests can be run with *yarn test:e2e* which has preflight and postflight scripts in package.json which spin up a docker container containing a test-db. Configuration for the test db can be found in the *docker-compose.yml* file.
 
+## Note
+
+API collection file in root directory, named *builder-collection.json*
